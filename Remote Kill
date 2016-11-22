@@ -1,0 +1,37 @@
+bool mRemoteKill(RemoteQuery* rQuery, RemoteInfo* rInfo)
+{
+    CPlayer* myPlyr = GetPlayerByIndex(MyIndex());
+    if(myPlyr->IsAlive())
+    {
+        int TargetIndex = GetNearestTarget(); // by Distance or Crosshair
+        if (TargetIndex != -1)
+        {
+            CPlayer* targetPlyr = GetPlayerByIndex(TargetIndex);
+            if (targetPlyr->Object && targetPlyr->IsAlive())
+            {
+                bool Valid = GetPlayerVisible(targetPlyr);
+                if (Valid)
+                {
+                    if (GetAsyncKeyState(VK_LBUTTON) < 0)
+                    {
+                        D3DXVECTOR3 Pos = GetBonePosition(targetRPlyr->Object, 6); // Player Head
+
+                        rQuery->rFrom = Pos + D3DXVECTOR3(0.0f, 50.0f, 0.0f);
+                        rQuery->rTo = Pos - D3DXVECTOR3(0.0f, 50.0f, 0.0f);
+                        rQuery->rFlags = ::INTERSECT_OBJECTS | ::IGNORE_NONSOLID | ::INTERSECT_HPOLY;
+                        rQuery->rFilterFn = FilterObjs;
+
+                        bool Result = oRemoteKill(*rQuery, rInfo);
+                        if (Result)
+                        {
+                            rInfo->hObjImpact = targetRPlyr->Object;
+                            rInfo->vImpactPos = Pos;
+                        }
+                        return oRemoteKill(*rQuery, rInfo);
+                    }
+                }
+            }
+        }
+    }
+    return oRemoteKill(*rQuery, rInfo);
+}
