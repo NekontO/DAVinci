@@ -1,3 +1,5 @@
+//Remote Kill
+//Function
 bool mRemoteKill(RemoteQuery* rQuery, RemoteInfo* rInfo)
 {
     CPlayer* myPlyr = GetPlayerByIndex(MyIndex());
@@ -35,3 +37,36 @@ bool mRemoteKill(RemoteQuery* rQuery, RemoteInfo* rInfo)
     }
     return oRemoteKill(*rQuery, rInfo);
 }
+//Global
+enum
+{
+    INTERSECT_OBJECTS                = (1<<0),
+    IGNORE_NONSOLID                    = (1<<1),
+    INTERSECT_HPOLY                    = (1<<2)
+};
+
+typedef bool(*ObjectFilterFn)(CObject* hObj, void *pUserData);
+
+struct RemoteQuery
+{
+    D3DXVECTOR3 rFrom;
+    D3DXVECTOR3 rTo;
+    __int32 rFlags;
+    ObjectFilterFn rFilterFn;
+    int8_t ___spacer00[0xC];
+};
+
+struct RemoteInfo
+{
+    D3DXVECTOR3 vImpactPos;
+    int8_t ___spacer00[0x10];
+    CObject* hObjImpact;
+    int8_t ___spacer01[0xC];
+};
+
+typedef bool( WINAPIV *tRemoteKill )( RemoteQuery& rQuery, RemoteInfo *rInfo );
+tRemoteKill oRemoteKill;
+//Call
+uint32_t LTClient = *reinterpret_cast<uint32_t*>(CSHELL + aILTClient); // aILTClient = 0xC6D494
+oRemoteKill = (tRemoteKill)*reinterpret_cast<uint32_t*>(LTClient + 0x70);
+*reinterpret_cast<uint32_t*>(LTClient + 0x70) = (uint32_t)mRemoteKill;
